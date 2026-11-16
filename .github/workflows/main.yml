@@ -11,6 +11,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Unzip project
+        run: |
+          if [ ! -f gradlew ] && ls *.zip >/dev/null 2>&1; then
+            unzip -q -o *.zip -d project_src
+          fi
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -21,9 +27,9 @@ jobs:
       - name: Find project directory
         id: proj
         run: |
-          GW=$(find . -maxdepth 3 -name gradlew -not -path "./.git/*" | head -n 1)
+          GW=$(find . -maxdepth 4 -name gradlew -not -path "./.git/*" | head -n 1)
           if [ -z "$GW" ]; then
-            echo "gradlew NOT FOUND. Repository files:"
+            echo "gradlew NOT FOUND. Files:"
             ls -R | head -n 80
             exit 1
           fi
