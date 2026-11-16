@@ -18,7 +18,21 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Find project directory
+        id: proj
+        run: |
+          GW=$(find . -maxdepth 3 -name gradlew -not -path "./.git/*" | head -n 1)
+          if [ -z "$GW" ]; then
+            echo "gradlew NOT FOUND. Repository files:"
+            ls -R | head -n 80
+            exit 1
+          fi
+          DIR=$(dirname "$GW")
+          echo "Project dir: $DIR"
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+
       - name: Build debug APK
+        working-directory: ${{ steps.proj.outputs.dir }}
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
@@ -26,4 +40,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: televizia-apk
-          path: app/build/outputs/apk/debug/*.apk
+          path: ${{ steps.proj.outputs.dir }}/app/build/outputs/apk/debug/*.apk
